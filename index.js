@@ -32,11 +32,13 @@ require("./modules/functions.js")(client);
 // catalogued, listed, etc.
 client.commands = new Enmap();
 client.aliases = new Enmap();
+client.responses = new Enmap();
 
 // Now we integrate the use of Evie's awesome Enhanced Map module, which
 // essentially saves a collection to disk. This is great for per-server configs,
 // and makes things extremely easy for this purpose.
 client.settings = new Enmap({provider: new EnmapLevel({name: "settings"})});
+client.userstats   = new Enmap({provider: new EnmapLevel({name: "userstats"})});
 
 // We're doing real fancy node 8 async/await stuff here, and to do that
 // we need to wrap stuff in an anonymous function. It's annoying but it works.
@@ -50,6 +52,14 @@ const init = async () => {
   cmdFiles.forEach(f => {
     if (!f.endsWith(".js")) return;
     const response = client.loadCommand(f);
+    if (response) console.log(response);
+  });
+
+  const respFiles = await readdir("./responses/");
+  client.logger.log(`Loading a total of ${respFiles.length} responses.`);
+  respFiles.forEach(f => {
+    if (!f.endsWith(".js")) return;
+    const response = client.loadResponse(f);
     if (response) console.log(response);
   });
 

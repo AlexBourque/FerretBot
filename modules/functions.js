@@ -104,6 +104,34 @@ module.exports = (client) => {
     return false;
   };
 
+  client.loadResponse = (responseName) => {
+    try {
+      const props = require(`../responses/${responseName}`);
+      if (props.init) {
+        props.init(client);
+      }
+      client.responses.set(props.conf.name,props);
+
+      return false;
+    } catch (e) {
+      return `Unable to load response ${responseName}: ${e}`;
+    }
+  };
+
+  client.unloadResponse = async (responseName) => {
+    let resp;
+    if (client.responses.has(responseName)) {
+      resp = client.responses.get(responseName);
+    }
+    if (!resp) return `The response \`${responseName}\` doesn"t seem to exist, nor is it an alias. Try again!`;
+  
+    if (resp.shutdown) {
+      await resp.shutdown(client);
+    }
+    delete require.cache[require.resolve(`../responses/${responseName}.js`)];
+    return false;
+  };
+  
   /* MISCELANEOUS NON-CRITICAL FUNCTIONS */
   
   // EXTENDING NATIVE TYPES IS BAD PRACTICE. Why? Because if JavaScript adds this
